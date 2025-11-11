@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 import httpx
 import pytest
@@ -34,13 +34,13 @@ async def test_osm_client_creates_note_with_mock_transport() -> None:
     await client.close()
     assert response.note_id == "123456"
     assert response.url.endswith("/123456")
-    assert response.created_at == datetime(2025, 11, 11, 10, 0, tzinfo=datetime.UTC)
+    assert response.created_at == datetime(2025, 11, 11, 10, 0, tzinfo=UTC)
 
 
 def test_parse_osm_datetime_supports_z_suffix() -> None:
     parsed = _parse_osm_datetime("2025-11-11T10:00:00Z")
     assert parsed.tzinfo is not None
-    assert parsed == datetime(2025, 11, 11, 10, 0, tzinfo=datetime.UTC)
+    assert parsed == datetime(2025, 11, 11, 10, 0, tzinfo=UTC)
 
 
 

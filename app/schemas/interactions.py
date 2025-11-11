@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Literal
 
@@ -40,13 +40,13 @@ InteractionPayload = TextPayload | LocationPayload
 class InteractionRequest(BaseModel):
     channel: InteractionChannel
     user_id: str = Field(..., min_length=1)
-    sent_at: datetime = Field(default_factory=lambda: datetime.now(datetime.UTC))
+    sent_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     payload: InteractionPayload
 
     @model_validator(mode="after")
     def ensure_timezone(self) -> InteractionRequest:
         if self.sent_at.tzinfo is None:
-            self.sent_at = self.sent_at.replace(tzinfo=datetime.UTC)
+            self.sent_at = self.sent_at.replace(tzinfo=UTC)
         return self
 
 

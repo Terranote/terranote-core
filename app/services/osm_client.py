@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
@@ -23,7 +23,7 @@ def _parse_osm_datetime(raw: str) -> datetime:
 
     if raw.endswith("Z"):
         raw = raw[:-1] + "+00:00"
-    return datetime.fromisoformat(raw).astimezone(datetime.UTC)
+    return datetime.fromisoformat(raw).astimezone(UTC)
 
 
 class OSMClient:

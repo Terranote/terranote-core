@@ -1,6 +1,6 @@
 import sys
 from collections.abc import AsyncIterator, Iterator
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
@@ -65,7 +65,7 @@ class FakeOSMClient(OSMClient):
             raise self._exceptions.pop(0)
 
         self._counter += 1
-        created_at = datetime.now(datetime.UTC)
+        created_at = datetime.now(UTC)
         return OSMNoteResponse(
             note_id=str(self._counter),
             url=f"https://example.org/note/{self._counter}",

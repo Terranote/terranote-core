@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from itertools import count
 from typing import Literal
 
@@ -42,7 +42,7 @@ class ScenarioPayload(BaseModel):
 
 def _note_payload(lat: float, lon: float, text: str) -> dict:
     note_id = next(NOTE_COUNTER)
-    created_at = datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+    created_at = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     return {
         "type": "Feature",
         "properties": {

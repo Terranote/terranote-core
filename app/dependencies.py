@@ -1,4 +1,9 @@
-from app.container import interaction_service, note_publisher, notification_service, osm_client
+from app.container import (
+    interaction_service,
+    note_publisher,
+    notification_service,
+    osm_client,
+)
 from app.services.interaction_service import InteractionService
 from app.services.note_publisher import NotePublisher
 from app.services.notification import NotificationService

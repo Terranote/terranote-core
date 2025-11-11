@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Gestión de sesiones para agrupar interacciones de un usuario."""
+
+from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -36,7 +36,12 @@ class SessionState:
         self.texts.append(text)
         self.last_interaction_at = timestamp
 
-    def set_location(self, latitude: float, longitude: float, timestamp: datetime) -> None:
+    def set_location(
+        self,
+        latitude: float,
+        longitude: float,
+        timestamp: datetime,
+    ) -> None:
         """Asocia la ubicación actual a la sesión."""
         self.location = LocationRecord(
             latitude=latitude,

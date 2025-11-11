@@ -2,8 +2,8 @@ from fastapi import FastAPI
 
 from app.api.router import api_router
 from app.api.routes import metrics as metrics_router
-from app.container import osm_client, notification_service
 from app.config import settings
+from app.container import notification_service, osm_client
 
 
 async def shutdown_event() -> None:

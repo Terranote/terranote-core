@@ -2,8 +2,8 @@ from app.core.sessions import SessionManager, SessionStore
 from app.services.interaction_service import InteractionService
 from app.services.note_builder import NoteBuilder
 from app.services.note_publisher import NotePublisher
-from app.services.osm_client import OSMClient
 from app.services.notification import NotificationService
+from app.services.osm_client import OSMClient
 
 session_store = SessionStore()
 session_manager = SessionManager(session_store)

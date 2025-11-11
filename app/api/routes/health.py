@@ -6,7 +6,11 @@ from app.telemetry import metrics
 router = APIRouter()
 
 
-@router.get("/status", response_model=HealthStatus, summary="Estado general del sistema")
+@router.get(
+    "/status",
+    response_model=HealthStatus,
+    summary="Estado general del sistema",
+)
 async def read_status() -> HealthStatus:
     snapshot = metrics.snapshot_notes()
     return HealthStatus(

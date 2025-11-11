@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Literal, Optional, Union, List
+from typing import List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field, model_validator
 

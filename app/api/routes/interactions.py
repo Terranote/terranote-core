@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends
 
 from app.dependencies import get_interaction_service
-from app.schemas.interactions import InteractionBatchRequest, InteractionRequest, InteractionResponse
+from app.schemas.interactions import (
+    InteractionBatchRequest,
+    InteractionRequest,
+    InteractionResponse,
+)
 from app.services.interaction_service import InteractionService
 
 router = APIRouter()
@@ -11,7 +15,10 @@ router = APIRouter()
     "/interactions",
     response_model=InteractionResponse,
     summary="Recibe interacciones desde adaptadores de mensajería",
-    description="Consulta `docs/interfaces.md` para el contrato completo de entrada y salida.",
+    description=(
+        "Consulta `docs/interfaces.md` para el contrato completo "
+        "de entrada y salida."
+    ),
 )
 async def receive_interaction(
     payload: InteractionRequest,

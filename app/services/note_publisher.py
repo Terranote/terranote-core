@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime
 import asyncio
 import logging
+from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
 
 import httpx
@@ -11,7 +11,7 @@ import httpx
 from app.config import settings
 from app.services.exceptions import NotePublishingError
 from app.services.note_builder import NoteDraft
-from app.services.osm_client import OSMClient, OSMNoteResponse
+from app.services.osm_client import OSMClient
 from app.telemetry import metrics
 
 
@@ -38,7 +38,7 @@ class NotePublisher:
         while True:
             metrics.increment("note_publication_attempts")
             try:
-                response: OSMNoteResponse = await self._osm_client.create_anonymous_note(
+                response = await self._osm_client.create_anonymous_note(
                     latitude=draft.latitude,
                     longitude=draft.longitude,
                     text=draft.text,
@@ -132,8 +132,3 @@ class NotePublisher:
 
     async def close(self) -> None:
         await self._osm_client.close()
-        return NoteCreationResult(
-            note_id=response.note_id,
-            url=response.url,
-            created_at=response.created_at,
-        )

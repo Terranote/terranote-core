@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     session_max_gap_seconds: int = 20
     session_max_duration_seconds: int = 120
     note_system_identifier: str = "Terranote Core v1.0"
+    osm_api_base_url: str = "https://api.openstreetmap.org"
+    osm_api_timeout_seconds: float = 10.0
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

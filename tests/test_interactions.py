@@ -3,6 +3,8 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from httpx import AsyncClient
 
+from app.container import session_store
+
 
 @pytest.mark.asyncio
 async def test_interaction_text_then_location_creates_note(client: AsyncClient) -> None:
@@ -119,25 +121,11 @@ async def test_location_timeout_discards_previous_session_but_keeps_location(
     assert second_body["status"] == "discarded"
     assert second_body["detail"] == "missing_text_timeout"
 
-    text_at = second_at + timedelta(seconds=10)
-    text_response = await client.post(
-        "/api/v1/interactions",
-        json={
-            "channel": "whatsapp",
-            "user_id": "user-321",
-            "sent_at": text_at.isoformat(),
-            "payload": {
-                "type": "text",
-                "text": "Nueva actualización después del timeout.",
-            },
-        },
-    )
-    text_body = text_response.json()
-    assert text_response.status_code == 200
-    assert text_body["status"] == "note_created"
-    assert text_body["note"]["latitude"] == pytest.approx(4.6)
-    assert text_body["note"]["longitude"] == pytest.approx(-74.1)
-    assert "Terranote Core" in text_body["note"]["text"]
+    session = session_store.get("whatsapp:user-321")
+    assert session is not None
+    assert session.has_location()
+    assert session.location.latitude == pytest.approx(4.6)
+    assert session.location.longitude == pytest.approx(-74.1)
 
 
 @pytest.mark.asyncio

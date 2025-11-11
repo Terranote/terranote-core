@@ -32,6 +32,11 @@ pip install -r requirements-dev.txt
 .venv/bin/uvicorn app.main:app --reload
 ```
 
+Variables de entorno relevantes:
+
+- `OSM_API_BASE_URL`: URL base del API de OpenStreetMap (por defecto `https://api.openstreetmap.org`).
+- `OSM_API_TIMEOUT_SECONDS`: timeout de peticiones en segundos (por defecto `10.0`).
+
 ## Pruebas
 
 ```bash

@@ -5,7 +5,7 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_create_anonymous_note_stub(client: AsyncClient) -> None:
+async def test_create_anonymous_note_with_fake_publisher(client: AsyncClient) -> None:
     response = await client.post(
         "/api/v1/notes/anonymous",
         json={
@@ -18,7 +18,7 @@ async def test_create_anonymous_note_stub(client: AsyncClient) -> None:
     body = response.json()
     assert response.status_code == 200
     assert body["note_id"]
-    assert body["url"].startswith("https://www.openstreetmap.org/note/")
+    assert body["url"].startswith("https://example.org/note/")
     assert "Terranote Core" in body["text"]
 
 

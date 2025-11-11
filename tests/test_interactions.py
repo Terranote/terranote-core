@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from httpx import AsyncClient
 
-from tests.conftest import FakeOSMClient
+from tests.conftest import DummyNotificationService, FakeOSMClient
 
 from app.config import settings
 from app.container import session_store
@@ -12,6 +12,7 @@ from app.container import session_store
 @pytest.mark.asyncio
 async def test_interaction_text_then_location_creates_note(
     client: AsyncClient,
+    notification_service: DummyNotificationService,
 ) -> None:
     sent_at = datetime.now(timezone.utc)
     response = await client.post(
@@ -52,9 +53,17 @@ async def test_interaction_text_then_location_creates_note(
     assert body["note"]["longitude"] == pytest.approx(-74.0721)
     assert "Terranote Core" in body["note"]["text"]
 
+    assert len(notification_service.notifications) == 1
+    note_notification = notification_service.notifications[0]
+    assert note_notification.user_id == "user-123"
+    assert note_notification.channel.value == "whatsapp"
+
 
 @pytest.mark.asyncio
-async def test_missing_location_is_discarded_after_timeout(client: AsyncClient) -> None:
+async def test_missing_location_is_discarded_after_timeout(
+    client: AsyncClient,
+    notification_service: DummyNotificationService,
+) -> None:
     sent_at = datetime.now(timezone.utc)
     second_at = sent_at + timedelta(seconds=21)
 
@@ -82,11 +91,13 @@ async def test_missing_location_is_discarded_after_timeout(client: AsyncClient) 
     assert second.status_code == 200
     assert body["status"] == "discarded"
     assert body["detail"] == "missing_location_timeout"
+    assert not notification_service.notifications
 
 
 @pytest.mark.asyncio
 async def test_location_timeout_discards_previous_session_but_keeps_location(
     client: AsyncClient,
+    notification_service: DummyNotificationService,
 ) -> None:
     first_at = datetime.now(timezone.utc)
     first_location = await client.post(
@@ -125,6 +136,7 @@ async def test_location_timeout_discards_previous_session_but_keeps_location(
     assert second_location.status_code == 200
     assert second_body["status"] == "discarded"
     assert second_body["detail"] == "missing_text_timeout"
+    assert not notification_service.notifications
 
     session = session_store.get("whatsapp:user-321")
     assert session is not None
@@ -134,7 +146,10 @@ async def test_location_timeout_discards_previous_session_but_keeps_location(
 
 
 @pytest.mark.asyncio
-async def test_location_then_text_creates_note(client: AsyncClient) -> None:
+async def test_location_then_text_creates_note(
+    client: AsyncClient,
+    notification_service: DummyNotificationService,
+) -> None:
     sent_at = datetime.now(timezone.utc)
     location = await client.post(
         "/api/v1/interactions",
@@ -168,12 +183,14 @@ async def test_location_then_text_creates_note(client: AsyncClient) -> None:
     assert text_response.status_code == 200
     assert text_body["status"] == "note_created"
     assert "Hueco" in text_body["note"]["text"]
+    assert len(notification_service.notifications) == 1
 
 
 @pytest.mark.asyncio
 async def test_publisher_http_error_returns_discarded(
     client: AsyncClient,
     fake_osm_client: FakeOSMClient,
+    notification_service: DummyNotificationService,
 ) -> None:
     fake_osm_client.queue_http_error(429)
 
@@ -205,12 +222,14 @@ async def test_publisher_http_error_returns_discarded(
     assert response.status_code == 200
     assert body["status"] == "discarded"
     assert body["detail"] == "osm_api_error"
+    assert not notification_service.notifications
 
 
 @pytest.mark.asyncio
 async def test_publisher_retries_on_server_error(
     client: AsyncClient,
     fake_osm_client: FakeOSMClient,
+    notification_service: DummyNotificationService,
 ) -> None:
     fake_osm_client.queue_http_error(503)
 
@@ -242,6 +261,7 @@ async def test_publisher_retries_on_server_error(
     body = response.json()
     assert response.status_code == 200
     assert body["status"] == "note_created"
+    assert len(notification_service.notifications) == 1
 
     status_resp = await client.get("/api/v1/status")
     metrics_body = status_resp.json()["metrics"]
@@ -259,6 +279,7 @@ async def test_publisher_retries_on_server_error(
 async def test_publisher_network_error_discarded_after_retries(
     client: AsyncClient,
     fake_osm_client: FakeOSMClient,
+    notification_service: DummyNotificationService,
 ) -> None:
     fake_osm_client.queue_request_error(times=settings.osm_max_retries + 1)
 
@@ -290,6 +311,7 @@ async def test_publisher_network_error_discarded_after_retries(
     assert response.status_code == 200
     assert body["status"] == "discarded"
     assert body["detail"] == "osm_api_unreachable"
+    assert not notification_service.notifications
 
     status_resp = await client.get("/api/v1/status")
     metrics_body = status_resp.json()["metrics"]
@@ -309,6 +331,7 @@ async def test_publisher_network_error_discarded_after_retries(
 async def test_publisher_invalid_response_discarded(
     client: AsyncClient,
     fake_osm_client: FakeOSMClient,
+    notification_service: DummyNotificationService,
 ) -> None:
     fake_osm_client.queue_invalid_response()
 
@@ -340,6 +363,7 @@ async def test_publisher_invalid_response_discarded(
     assert response.status_code == 200
     assert body["status"] == "discarded"
     assert body["detail"] == "osm_response_invalid"
+    assert not notification_service.notifications
 
     status_resp = await client.get("/api/v1/status")
     metrics_body = status_resp.json()["metrics"]

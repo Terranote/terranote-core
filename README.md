@@ -1,5 +1,7 @@
 # terranote-core
 
+> Versión recomendada para adaptadores (fase 1): `v1.0.0-fase1`
+
 Módulo central (fase 1) de Terranote para orquestar la creación de notas en OpenStreetMap desde aplicaciones de mensajería.
 
 ## Objetivo
@@ -84,6 +86,18 @@ curl -X POST http://localhost:8080/__control__/reset
 
 Prometheus (job `terranote-core`) hace scrape cada 10 segundos a `/metrics`.
 
+### Pruebas end-to-end
+
+```bash
+docker compose -f docker/compose.prometheus.yml up --build
+```
+
+- `terranote-core`: expuesto en `http://localhost:8000`
+- `fake-osm`: expuesto en `http://localhost:8080` (configurable vía curl como se indica arriba)
+- Prometheus: `http://localhost:9090`
+
+El adaptador de WhatsApp puede apuntar a `http://localhost:8000/api/v1/interactions` y registrar su callback (`NOTIFIER_WHATSAPP_ENDPOINT`) apuntando a su propio servidor local.
+
 ## Docker
 
 ```bash
@@ -96,7 +110,14 @@ docker run -p 8000:8000 terranote-core:dev
 - `FakeOSMClient`: fixture en `tests/conftest.py`, ideal para pruebas unitarias en memoria.
 - `fakes/osm_api`: servicio HTTP emulado disponible en Docker (ver sección Prometheus) con escenarios configurables vía `/__control__/scenario`.
 
-## Fakes disponibles
+## Configuración
 
-- `FakeOSMClient` (pruebas unitarias): se inyecta vía fixture y trabaja en memoria.
-- `fakes/osm_api` (fake HTTP): se expone en Docker/Jupyter para escenarios end-to-end; configurable mediante `/__control__/scenario`.
+| Variable                         | Descripción                                                | Valor por defecto                     |
+|---------------------------------|------------------------------------------------------------|---------------------------------------|
+| `OSM_API_BASE_URL`              | URL del API de OSM (o fake)                                | `https://api.openstreetmap.org`       |
+| `OSM_API_TIMEOUT_SECONDS`       | Timeout de peticiones a OSM                                | `10.0`                                |
+| `OSM_MAX_RETRIES`               | Reintentos ante fallos temporales al crear nota            | `2`                                   |
+| `OSM_RETRY_BACKOFF_SECONDS`     | Factor de backoff para reintentos                          | `0.2`                                 |
+| `NOTIFIER_WHATSAPP_ENDPOINT`    | Callback del adaptador WhatsApp para notificaciones        | `null` (deshabilitado)                |
+| `NOTIFIER_TELEGRAM_ENDPOINT`    | Callback del adaptador Telegram para notificaciones        | `null` (deshabilitado)                |
+| `OFFLINE_GAP_SECONDS`           | Umbral para tratar mensajes como offline y usar `/batch`    | `5`                                   |

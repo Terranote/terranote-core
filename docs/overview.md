@@ -1,13 +1,10 @@
-# Terranote Core – Fase 1
+# Terranote Core – Fase 1 (versión estable v1.0.0)
+
+> Tag sugerido para adaptadores: `v1.0.0-fase1`
 
 ## Resumen
 
-Servicio FastAPI que orquesta la creación de notas anónimas en OpenStreetMap a partir de interacciones recibidas desde adaptadores de mensajería. Esta fase implementa:
-
-- Agrupación de interacciones (texto/ubicación) por usuario con restricciones de tiempo.
-- Construcción de notas con identificador del sistema y publicación en la API OSM v0.6.
-- Reintentos, métricas y logging para la publicación.
-- Exposición de métricas Prometheus y estado resumido.
+Fase 1 completa: WhatsApp + texto, publicación anónima en OSM, notificaciones, soporte offline.
 
 ## Componentes principales
 

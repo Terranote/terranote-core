@@ -65,3 +65,9 @@
 - **Payload**: lista ordenada o desordenada de `InteractionRequest`; el módulo central los ordena por `sent_at`.
 - **Respuesta**: lista de `InteractionResponse` correspondientes a cada interacción procesada.
 
+## Configuración para adaptadores
+
+- `OSM_API_BASE_URL`: apuntar al servicio central (`http://localhost:8000` en desarrollo).
+- `NOTIFIER_WHATSAPP_ENDPOINT` / `NOTIFIER_TELEGRAM_ENDPOINT`: URL del callback que expone el adaptador para recibir notificaciones (`POST /callbacks/note-created`).
+- `OFFLINE_GAP_SECONDS`: tiempo que determina si un mensaje se considera offline.
+

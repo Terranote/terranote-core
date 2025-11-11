@@ -21,6 +21,7 @@ from app.main import create_app  # noqa: E402
 from app.services.interaction_service import InteractionService  # noqa: E402
 from app.services.note_publisher import NotePublisher  # noqa: E402
 from app.services.osm_client import OSMClient, OSMNoteResponse  # noqa: E402
+from app.telemetry import metrics  # noqa: E402
 
 
 class FakeOSMClient(OSMClient):
@@ -68,8 +69,10 @@ class FakeOSMClient(OSMClient):
 @pytest.fixture(autouse=True)
 def _reset_session_store() -> Iterator[None]:
     session_store.clear()
+    metrics.reset()
     yield
     session_store.clear()
+    metrics.reset()
 
 
 @pytest.fixture()

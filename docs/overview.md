@@ -6,6 +6,47 @@
 
 Fase 1 completa: WhatsApp + texto, publicación anónima en OSM, notificaciones, soporte offline.
 
+## Diagrama de colaboración
+
+```mermaid
+flowchart TD
+    subgraph Core["terranote-core"]
+        API["API FastAPI\n(app/api)"]
+        Servicios["Servicios de dominio\n(app/services)"]
+        Sesiones["Gestor de sesiones\n(app/core/sessions.py)"]
+        FakesLocal["Fakes locales\n(tests/fakes, fakes/osm_api)"]
+    end
+
+    subgraph Infra["terranote-infra"]
+        Compose["Perfiles docker-compose\n(core, fakes, observabilidad)"]
+        Observability["Stack observabilidad\n(Prometheus, Grafana opcional)"]
+        Tunnels["Túneles / mocks externos"]
+    end
+
+    subgraph Tests["terranote-tests"]
+        Suites["Suite pytest\n(smoke, e2e, load)"]
+        Generadores["Fixtures y datos sintéticos"]
+    end
+
+    Adaptadores["Adaptadores externos\n(WhatsApp, Telegram, etc.)"]
+    OSM["OpenStreetMap API\n(real o fake)"]
+
+    Adaptadores -->|Interacciones| API
+    API -->|Notas anónimas| OSM
+    API --> Servicios
+    Servicios --> Sesiones
+    Servicios --> FakesLocal
+
+    Compose --> API
+    Compose --> FakesLocal
+    Compose --> Observability
+    Tunnels --> Adaptadores
+    Suites --> API
+    Suites --> FakesLocal
+    Suites --> Observability
+    Generadores --> Suites
+```
+
 ## Componentes principales
 
 ### `app/core/sessions.py`

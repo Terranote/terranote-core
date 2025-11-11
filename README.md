@@ -58,9 +58,10 @@ El workflow de GitHub Actions (`.github/workflows/ci.yml`) ejecuta lint (ruff, b
 
 Consulta `docs/interfaces.md` para los contratos de entrada/salida de los adaptadores.
 
-### Infraestructura integrada
+### Repositorios auxiliares
 
-Para levantar el núcleo junto con los adaptadores y servicios auxiliares (fake OSM, túneles, etc.) utiliza el repositorio [`terranote-infra`](https://github.com/Terranote/terranote-infra). Allí encontrarás los escenarios `docker-compose` listos para pruebas end-to-end con WhatsApp y, a futuro, otros canales.
+- **Infraestructura compartida**: utiliza el repositorio [`terranote-infra`](https://github.com/Terranote/terranote-infra) para levantar el núcleo junto con adaptadores y servicios auxiliares (fake OSM, túneles, observabilidad). Los escenarios `docker-compose` de ese proyecto están alineados con la estructura de este repositorio: basta con clonar ambos en la misma carpeta y exportar `COMPOSE_PROFILES=core,fakes` para ejecutar `docker compose up` desde `terranote-infra`.
+- **Pruebas de extremo a extremo**: el repositorio [`terranote-tests`](https://github.com/Terranote/terranote-tests) contiene suites de integración y carga que consumen la API expuesta por `terranote-core`. Después de levantar la infraestructura con `terranote-infra`, posiciona tu terminal en `terranote-tests` y ejecuta `poetry run pytest -m "e2e or smoke"` para validar los flujos principales. Consulta su README para ver los perfiles disponibles (`smoke`, `regression`, `load`).
 
 ## Observabilidad
 

@@ -5,7 +5,9 @@ from app.schemas.interactions import (
     InteractionOutcomeStatus,
     InteractionRequest,
     InteractionResponse,
+    LocationPayload,
     NotePreview,
+    TextPayload,
 )
 from app.services.exceptions import NotePublishingError
 from app.services.note_builder import NoteBuilder
@@ -30,20 +32,20 @@ class InteractionService:
         self,
         request: InteractionRequest,
     ) -> InteractionResponse:
-        payload_type = request.payload.type
-        if payload_type == "text":
+        payload = request.payload
+        if isinstance(payload, TextPayload):
             decision = self._session_manager.handle_text(
                 channel=request.channel,
                 user_id=request.user_id,
-                text=request.payload.text,  # type: ignore[attr-defined]
+                text=payload.text,
                 timestamp=request.sent_at,
             )
-        elif payload_type == "location":
+        elif isinstance(payload, LocationPayload):
             decision = self._session_manager.handle_location(
                 channel=request.channel,
                 user_id=request.user_id,
-                latitude=request.payload.latitude,  # type: ignore[attr-defined]
-                longitude=request.payload.longitude,  # type: ignore[attr-defined]
+                latitude=payload.latitude,
+                longitude=payload.longitude,
                 timestamp=request.sent_at,
             )
         else:

@@ -58,6 +58,10 @@ El workflow de GitHub Actions (`.github/workflows/ci.yml`) ejecuta lint (ruff, b
 
 Consulta `docs/interfaces.md` para los contratos de entrada/salida de los adaptadores.
 
+### Infraestructura integrada
+
+Para levantar el núcleo junto con los adaptadores y servicios auxiliares (fake OSM, túneles, etc.) utiliza el repositorio [`terranote-infra`](https://github.com/Terranote/terranote-infra). Allí encontrarás los escenarios `docker-compose` listos para pruebas end-to-end con WhatsApp y, a futuro, otros canales.
+
 ## Observabilidad
 
 - El endpoint `GET /api/v1/status` expone métricas agregadas de publicación de notas (intentos, éxitos y fallos).

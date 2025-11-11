@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import datetime
 from itertools import count
-from typing import Literal, Optional
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -14,7 +14,12 @@ NOTE_COUNTER = count(1)
 
 @dataclass
 class ScenarioState:
-    mode: Literal["success", "http_error", "network_error", "invalid_response"] = "success"
+    mode: Literal[
+        "success",
+        "http_error",
+        "network_error",
+        "invalid_response",
+    ] = "success"
     status_code: int = 503
     delay_ms: int = 0
 
@@ -37,7 +42,7 @@ class ScenarioPayload(BaseModel):
 
 def _note_payload(lat: float, lon: float, text: str) -> dict:
     note_id = next(NOTE_COUNTER)
-    created_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    created_at = datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
     return {
         "type": "Feature",
         "properties": {

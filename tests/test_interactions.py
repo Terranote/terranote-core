@@ -3,10 +3,9 @@ from datetime import datetime, timedelta
 import pytest
 from httpx import AsyncClient
 
-from tests.conftest import DummyNotificationService, FakeOSMClient
-
 from app.config import settings
 from app.container import session_store
+from tests.conftest import DummyNotificationService, FakeOSMClient
 
 
 @pytest.mark.asyncio

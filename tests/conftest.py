@@ -12,18 +12,21 @@ if str(ROOT_PATH) not in sys.path:
     sys.path.insert(0, str(ROOT_PATH))
 
 from app import config  # noqa: E402
-from app.container import session_store, session_manager, note_builder  # noqa: E402
+from app.container import note_builder, session_manager, session_store  # noqa: E402
 from app.dependencies import (  # noqa: E402
     get_interaction_service,
     get_note_publisher,
-    get_osm_client,
     get_notification_service,
+    get_osm_client,
 )
 from app.main import create_app  # noqa: E402
 from app.services.interaction_service import InteractionService  # noqa: E402
 from app.services.note_publisher import NotePublisher  # noqa: E402
+from app.services.notification import (  # noqa: E402
+    NoteNotification,
+    NotificationService,
+)
 from app.services.osm_client import OSMClient, OSMNoteResponse  # noqa: E402
-from app.services.notification import NotificationService, NoteNotification  # noqa: E402
 from app.telemetry import metrics  # noqa: E402
 
 
@@ -45,7 +48,9 @@ class FakeOSMClient(OSMClient):
     def queue_request_error(self, times: int = 1) -> None:
         request = httpx.Request("POST", "https://api.test-osm.org/api/0.6/notes.json")
         for _ in range(times):
-            self._exceptions.append(httpx.RequestError("network error", request=request))
+            self._exceptions.append(
+                httpx.RequestError("network error", request=request)
+            )
 
     def queue_invalid_response(self) -> None:
         self._exceptions.append(ValueError("invalid response"))
@@ -142,6 +147,8 @@ async def client(
     app.dependency_overrides[get_interaction_service] = lambda: interaction_service
 
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://testserver") as async_client:
+    async with AsyncClient(
+        transport=transport, base_url="http://testserver"
+    ) as async_client:
         yield async_client
 

@@ -1,7 +1,7 @@
 from datetime import datetime
 
-import pytest
 import httpx
+import pytest
 
 from app.services.osm_client import OSMClient, OSMNoteResponse, _parse_osm_datetime
 

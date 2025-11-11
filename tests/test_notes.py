@@ -3,9 +3,8 @@ from datetime import datetime
 import pytest
 from httpx import AsyncClient
 
-from tests.conftest import FakeOSMClient
-
 from app.config import settings
+from tests.conftest import FakeOSMClient
 
 
 @pytest.mark.asyncio

@@ -50,6 +50,15 @@ Variables de entorno relevantes:
 
 - El endpoint `GET /api/v1/status` expone métricas agregadas de publicación de notas (intentos, éxitos y fallos).
 - Las publicaciones en OSM registran logs informativos y de advertencia/errores con detalles de latitud y longitud para facilitar el diagnóstico.
+- El endpoint `GET /metrics` expone métricas en formato Prometheus con los contadores anteriores.
+
+### Ejecutar con Prometheus (Docker)
+
+```bash
+docker compose -f docker/compose.prometheus.yml up --build
+```
+
+Esto levantará el servicio `terranote-core` (puerto `8000`) y Prometheus (puerto `9090`) con un scrape cada 10 segundos apuntando a `/metrics`.
 
 ## Docker
 

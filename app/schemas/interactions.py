@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import List, Literal, Optional, Union
+from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -34,7 +34,7 @@ class LocationPayload(BasePayload):
     longitude: float = Field(..., ge=-180.0, le=180.0)
 
 
-InteractionPayload = Union[TextPayload, LocationPayload]
+InteractionPayload = TextPayload | LocationPayload
 
 
 class InteractionRequest(BaseModel):
@@ -44,7 +44,7 @@ class InteractionRequest(BaseModel):
     payload: InteractionPayload
 
     @model_validator(mode="after")
-    def ensure_timezone(self) -> "InteractionRequest":
+    def ensure_timezone(self) -> InteractionRequest:
         if self.sent_at.tzinfo is None:
             self.sent_at = self.sent_at.replace(tzinfo=datetime.UTC)
         return self
@@ -52,7 +52,7 @@ class InteractionRequest(BaseModel):
 
 class NotePreview(BaseModel):
     note_id: str
-    url: Optional[str] = None
+    url: str | None = None
     latitude: float
     longitude: float
     text: str
@@ -61,11 +61,11 @@ class NotePreview(BaseModel):
 
 class InteractionResponse(BaseModel):
     status: InteractionOutcomeStatus
-    detail: Optional[str] = None
-    note: Optional[NotePreview] = None
+    detail: str | None = None
+    note: NotePreview | None = None
 
 
 class InteractionBatchRequest(BaseModel):
-    interactions: List[InteractionRequest]
+    interactions: list[InteractionRequest]
 
 

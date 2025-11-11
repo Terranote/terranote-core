@@ -4,8 +4,6 @@ import asyncio
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
-
 import httpx
 
 from app.config import settings
@@ -18,7 +16,7 @@ from app.telemetry import metrics
 @dataclass
 class NoteCreationResult:
     note_id: str
-    url: Optional[str]
+    url: str | None
     created_at: datetime
 
 

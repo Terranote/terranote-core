@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from threading import Lock
-from typing import Dict
 
 from prometheus_client import CollectorRegistry, Counter, generate_latest
 
@@ -17,7 +16,7 @@ class NotePublicationSnapshot:
     retries: int
 
 
-_COUNTER_DEFINITIONS: Dict[str, Dict[str, str]] = {
+_COUNTER_DEFINITIONS: dict[str, dict[str, str]] = {
     "note_publication_attempts": {
         "metric": "terranote_note_publication_attempts_total",
         "description": "Total note publication attempts",
@@ -52,8 +51,8 @@ class Telemetry:
 
     def _initialize_counters(self) -> None:
         self._registry = CollectorRegistry()
-        self._counters: Dict[str, int] = {}
-        self._prom_counters: Dict[str, Counter] = {}
+        self._counters: dict[str, int] = {}
+        self._prom_counters: dict[str, Counter] = {}
         for name, definition in _COUNTER_DEFINITIONS.items():
             self._counters[name] = 0
             self._prom_counters[name] = Counter(

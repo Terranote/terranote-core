@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 import pytest
 from httpx import AsyncClient
@@ -16,7 +16,7 @@ async def test_create_anonymous_note_with_fake_publisher(client: AsyncClient) ->
             "latitude": 4.711,
             "longitude": -74.0721,
             "text": "Prueba manual de nota.",
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(datetime.UTC).isoformat(),
         },
     )
     body = response.json()

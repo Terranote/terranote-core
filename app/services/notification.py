@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 import httpx
 
@@ -20,7 +19,7 @@ class NoteNotification:
     channel: InteractionChannel
     user_id: str
     note_id: str
-    note_url: Optional[str]
+    note_url: str | None
     latitude: float
     longitude: float
     text: str
@@ -81,7 +80,7 @@ class NotificationService:
     async def close(self) -> None:
         await self._client.aclose()
 
-    def _resolve_endpoint(self, channel: InteractionChannel) -> Optional[str]:
+    def _resolve_endpoint(self, channel: InteractionChannel) -> str | None:
         if channel == InteractionChannel.whatsapp:
             return settings.notifier_whatsapp_endpoint
         if channel == InteractionChannel.telegram:

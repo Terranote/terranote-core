@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
-
 from app.config import settings
 from app.schemas.interactions import InteractionChannel
 
@@ -28,8 +26,8 @@ class SessionState:
     user_id: str
     started_at: datetime
     last_interaction_at: datetime
-    texts: List[str] = field(default_factory=list)
-    location: Optional[LocationRecord] = None
+    texts: list[str] = field(default_factory=list)
+    location: LocationRecord | None = None
 
     def add_text(self, text: str, timestamp: datetime) -> None:
         """Registra un texto nuevo y actualiza la última interacción."""
@@ -75,9 +73,9 @@ class SessionState:
 
 class SessionStore:
     def __init__(self) -> None:
-        self._store: Dict[str, SessionState] = {}
+        self._store: dict[str, SessionState] = {}
 
-    def get(self, key: str) -> Optional[SessionState]:
+    def get(self, key: str) -> SessionState | None:
         return self._store.get(key)
 
     def upsert(
@@ -113,7 +111,7 @@ class SessionStore:
 class NoteCandidate:
     channel: InteractionChannel
     user_id: str
-    texts: List[str]
+    texts: list[str]
     latitude: float
     longitude: float
     started_at: datetime
@@ -123,8 +121,8 @@ class NoteCandidate:
 @dataclass
 class SessionDecision:
     status: str
-    detail: Optional[str] = None
-    note: Optional[NoteCandidate] = None
+    detail: str | None = None
+    note: NoteCandidate | None = None
 
 
 class SessionManager:
@@ -139,7 +137,7 @@ class SessionManager:
         timestamp: datetime,
     ) -> SessionDecision:
         session = self._store.upsert(channel, user_id, timestamp)
-        pending_decision: Optional[SessionDecision] = None
+        pending_decision: SessionDecision | None = None
         if session.expired(timestamp):
             pending_decision = self._finalize_due_to_expiration(session, timestamp)
             session = self._store.upsert(channel, user_id, timestamp)
@@ -166,7 +164,7 @@ class SessionManager:
         timestamp: datetime,
     ) -> SessionDecision:
         session = self._store.upsert(channel, user_id, timestamp)
-        pending_decision: Optional[SessionDecision] = None
+        pending_decision: SessionDecision | None = None
         if session.expired(timestamp):
             pending_decision = self._finalize_due_to_expiration(session, timestamp)
             session = self._store.upsert(channel, user_id, timestamp)

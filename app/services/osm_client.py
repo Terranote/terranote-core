@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 
@@ -31,9 +31,9 @@ class OSMClient:
 
     def __init__(
         self,
-        base_url: Optional[str] = None,
-        timeout_seconds: Optional[float] = None,
-        transport: Optional[httpx.AsyncBaseTransport] = None,
+        base_url: str | None = None,
+        timeout_seconds: float | None = None,
+        transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         self._client = httpx.AsyncClient(
             base_url=base_url or settings.osm_api_base_url,

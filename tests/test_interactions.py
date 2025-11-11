@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 import pytest
 from httpx import AsyncClient
@@ -14,7 +14,7 @@ async def test_interaction_text_then_location_creates_note(
     client: AsyncClient,
     notification_service: DummyNotificationService,
 ) -> None:
-    sent_at = datetime.now(timezone.utc)
+    sent_at = datetime.now(datetime.UTC)
     response = await client.post(
         "/api/v1/interactions",
         json={
@@ -64,7 +64,7 @@ async def test_missing_location_is_discarded_after_timeout(
     client: AsyncClient,
     notification_service: DummyNotificationService,
 ) -> None:
-    sent_at = datetime.now(timezone.utc)
+    sent_at = datetime.now(datetime.UTC)
     second_at = sent_at + timedelta(seconds=21)
 
     first = await client.post(
@@ -99,7 +99,7 @@ async def test_location_timeout_discards_previous_session_but_keeps_location(
     client: AsyncClient,
     notification_service: DummyNotificationService,
 ) -> None:
-    first_at = datetime.now(timezone.utc)
+    first_at = datetime.now(datetime.UTC)
     first_location = await client.post(
         "/api/v1/interactions",
         json={
@@ -150,7 +150,7 @@ async def test_location_then_text_creates_note(
     client: AsyncClient,
     notification_service: DummyNotificationService,
 ) -> None:
-    sent_at = datetime.now(timezone.utc)
+    sent_at = datetime.now(datetime.UTC)
     location = await client.post(
         "/api/v1/interactions",
         json={
@@ -194,7 +194,7 @@ async def test_publisher_http_error_returns_discarded(
 ) -> None:
     fake_osm_client.queue_http_error(429)
 
-    sent_at = datetime.now(timezone.utc)
+    sent_at = datetime.now(datetime.UTC)
     await client.post(
         "/api/v1/interactions",
         json={
@@ -233,7 +233,7 @@ async def test_publisher_retries_on_server_error(
 ) -> None:
     fake_osm_client.queue_http_error(503)
 
-    sent_at = datetime.now(timezone.utc)
+    sent_at = datetime.now(datetime.UTC)
     await client.post(
         "/api/v1/interactions",
         json={
@@ -283,7 +283,7 @@ async def test_publisher_network_error_discarded_after_retries(
 ) -> None:
     fake_osm_client.queue_request_error(times=settings.osm_max_retries + 1)
 
-    sent_at = datetime.now(timezone.utc)
+    sent_at = datetime.now(datetime.UTC)
     await client.post(
         "/api/v1/interactions",
         json={
@@ -335,7 +335,7 @@ async def test_publisher_invalid_response_discarded(
 ) -> None:
     fake_osm_client.queue_invalid_response()
 
-    sent_at = datetime.now(timezone.utc)
+    sent_at = datetime.now(datetime.UTC)
     await client.post(
         "/api/v1/interactions",
         json={
@@ -382,7 +382,7 @@ async def test_batch_offline_processing(
     client: AsyncClient,
     notification_service: DummyNotificationService,
 ) -> None:
-    base = datetime.now(timezone.utc) - timedelta(minutes=5)
+    base = datetime.now(datetime.UTC) - timedelta(minutes=5)
     payload = {
         "interactions": [
             {

@@ -1,8 +1,7 @@
-from collections.abc import AsyncIterator, Iterator
-from datetime import datetime, timezone
-from pathlib import Path
 import sys
-from typing import List, Optional
+from collections.abc import AsyncIterator, Iterator
+from datetime import datetime
+from pathlib import Path
 
 import httpx
 import pytest
@@ -31,7 +30,7 @@ from app.telemetry import metrics  # noqa: E402
 class FakeOSMClient(OSMClient):
     def __init__(self) -> None:
         self._counter = 0
-        self._exceptions: List[Exception] = []
+        self._exceptions: list[Exception] = []
 
     def queue_http_error(self, status_code: int, times: int = 1) -> None:
         request = httpx.Request("POST", "https://api.test-osm.org/api/0.6/notes.json")
@@ -61,7 +60,7 @@ class FakeOSMClient(OSMClient):
             raise self._exceptions.pop(0)
 
         self._counter += 1
-        created_at = datetime.now(timezone.utc)
+        created_at = datetime.now(datetime.UTC)
         return OSMNoteResponse(
             note_id=str(self._counter),
             url=f"https://example.org/note/{self._counter}",
@@ -73,11 +72,11 @@ class FakeOSMClient(OSMClient):
 
 
 class DummyNotificationService(NotificationService):
-    def __init__(self, transport: Optional[httpx.BaseTransport] = None) -> None:
+    def __init__(self, transport: httpx.BaseTransport | None = None) -> None:
         super().__init__()
         if transport is not None:
             self._client = httpx.AsyncClient(timeout=5.0, transport=transport)
-        self.notifications: List[NoteNotification] = []
+        self.notifications: list[NoteNotification] = []
 
     async def notify_note_created(self, notification: NoteNotification) -> None:
         await super().notify_note_created(notification)

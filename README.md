@@ -54,6 +54,8 @@ Para generar reporte de cobertura:
 
 El workflow de GitHub Actions (`.github/workflows/ci.yml`) ejecuta lint (ruff, black, mypy) y pruebas con cobertura en cada push/PR.
 
+Consulta `docs/interfaces.md` para los contratos de entrada/salida de los adaptadores.
+
 ## Observabilidad
 
 - El endpoint `GET /api/v1/status` expone métricas agregadas de publicación de notas (intentos, éxitos y fallos).

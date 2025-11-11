@@ -11,6 +11,7 @@ router = APIRouter()
     "/interactions",
     response_model=InteractionResponse,
     summary="Recibe interacciones desde adaptadores de mensajería",
+    description="Consulta `docs/interfaces.md` para el contrato completo de entrada y salida.",
 )
 async def receive_interaction(
     payload: InteractionRequest,

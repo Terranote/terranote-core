@@ -17,11 +17,13 @@ from app.dependencies import (  # noqa: E402
     get_interaction_service,
     get_note_publisher,
     get_osm_client,
+    get_notification_service,
 )
 from app.main import create_app  # noqa: E402
 from app.services.interaction_service import InteractionService  # noqa: E402
 from app.services.note_publisher import NotePublisher  # noqa: E402
 from app.services.osm_client import OSMClient, OSMNoteResponse  # noqa: E402
+from app.services.notification import NotificationService, NoteNotification  # noqa: E402
 from app.telemetry import metrics  # noqa: E402
 
 
@@ -69,6 +71,14 @@ class FakeOSMClient(OSMClient):
         return None
 
 
+class DummyNotificationService(NotificationService):
+    def __init__(self) -> None:
+        self.notifications: List[NoteNotification] = []
+
+    async def notify_note_created(self, notification: NoteNotification) -> None:
+        self.notifications.append(notification)
+
+
 @pytest.fixture(autouse=True)
 def _reset_session_store() -> Iterator[None]:
     session_store.clear()
@@ -83,6 +93,11 @@ def fake_osm_client() -> FakeOSMClient:
     return FakeOSMClient()
 
 
+@pytest.fixture()
+def notification_service() -> DummyNotificationService:
+    return DummyNotificationService()
+
+
 @pytest.fixture(autouse=True)
 def _patch_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
     async def _noop(_: float) -> None:
@@ -92,17 +107,22 @@ def _patch_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture()
-async def client(fake_osm_client: FakeOSMClient) -> AsyncIterator[AsyncClient]:
+async def client(
+    fake_osm_client: FakeOSMClient,
+    notification_service: DummyNotificationService,
+) -> AsyncIterator[AsyncClient]:
     app = create_app()
     note_publisher = NotePublisher(fake_osm_client)
     interaction_service = InteractionService(
         session_manager=session_manager,
         note_builder=note_builder,
         note_publisher=note_publisher,
+        notification_service=notification_service,
     )
 
     app.dependency_overrides[get_osm_client] = lambda: fake_osm_client
     app.dependency_overrides[get_note_publisher] = lambda: note_publisher
+    app.dependency_overrides[get_notification_service] = lambda: notification_service
     app.dependency_overrides[get_interaction_service] = lambda: interaction_service
 
     transport = ASGITransport(app=app)

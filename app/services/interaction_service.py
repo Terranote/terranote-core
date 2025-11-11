@@ -10,6 +10,7 @@ from app.schemas.interactions import (
 from app.services.exceptions import NotePublishingError
 from app.services.note_builder import NoteBuilder
 from app.services.note_publisher import NotePublisher
+from app.services.notification import NoteNotification, NotificationService
 
 
 class InteractionService:
@@ -18,10 +19,12 @@ class InteractionService:
         session_manager: SessionManager,
         note_builder: NoteBuilder,
         note_publisher: NotePublisher,
+        notification_service: NotificationService,
     ) -> None:
         self._session_manager = session_manager
         self._note_builder = note_builder
         self._note_publisher = note_publisher
+        self._notification_service = notification_service
 
     async def process_interaction(
         self,
@@ -61,6 +64,20 @@ class InteractionService:
                     status=InteractionOutcomeStatus.discarded,
                     detail=exc.args[0],
                 )
+
+            await self._notification_service.notify_note_created(
+                NoteNotification(
+                    channel=decision.note.channel,
+                    user_id=decision.note.user_id,
+                    note_id=result.note_id,
+                    note_url=result.url,
+                    latitude=draft.latitude,
+                    longitude=draft.longitude,
+                    text=draft.text,
+                    created_at=result.created_at,
+                )
+            )
+
             return InteractionResponse(
                 status=InteractionOutcomeStatus.note_created,
                 note=NotePreview(

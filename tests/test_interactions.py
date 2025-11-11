@@ -5,6 +5,7 @@ from httpx import AsyncClient
 
 from tests.conftest import FakeOSMClient
 
+from app.config import settings
 from app.container import session_store
 
 
@@ -251,5 +252,103 @@ async def test_publisher_retries_on_server_error(
         "network_errors": 0,
         "invalid_responses": 0,
         "retries": 1,
+    }
+
+
+@pytest.mark.asyncio
+async def test_publisher_network_error_discarded_after_retries(
+    client: AsyncClient,
+    fake_osm_client: FakeOSMClient,
+) -> None:
+    fake_osm_client.queue_request_error(times=settings.osm_max_retries + 1)
+
+    sent_at = datetime.now(timezone.utc)
+    await client.post(
+        "/api/v1/interactions",
+        json={
+            "channel": "whatsapp",
+            "user_id": "user-network-error",
+            "sent_at": sent_at.isoformat(),
+            "payload": {"type": "text", "text": "Intento con red."},
+        },
+    )
+
+    response = await client.post(
+        "/api/v1/interactions",
+        json={
+            "channel": "whatsapp",
+            "user_id": "user-network-error",
+            "sent_at": (sent_at + timedelta(seconds=5)).isoformat(),
+            "payload": {
+                "type": "location",
+                "latitude": 4.0,
+                "longitude": -74.0,
+            },
+        },
+    )
+    body = response.json()
+    assert response.status_code == 200
+    assert body["status"] == "discarded"
+    assert body["detail"] == "osm_api_unreachable"
+
+    status_resp = await client.get("/api/v1/status")
+    metrics_body = status_resp.json()["metrics"]
+    expected_attempts = settings.osm_max_retries + 1
+    expected_retries = settings.osm_max_retries
+    assert metrics_body == {
+        "attempts": expected_attempts,
+        "successes": 0,
+        "http_errors": 0,
+        "network_errors": expected_attempts,
+        "invalid_responses": 0,
+        "retries": expected_retries,
+    }
+
+
+@pytest.mark.asyncio
+async def test_publisher_invalid_response_discarded(
+    client: AsyncClient,
+    fake_osm_client: FakeOSMClient,
+) -> None:
+    fake_osm_client.queue_invalid_response()
+
+    sent_at = datetime.now(timezone.utc)
+    await client.post(
+        "/api/v1/interactions",
+        json={
+            "channel": "whatsapp",
+            "user_id": "user-invalid",
+            "sent_at": sent_at.isoformat(),
+            "payload": {"type": "text", "text": "Texto de prueba."},
+        },
+    )
+
+    response = await client.post(
+        "/api/v1/interactions",
+        json={
+            "channel": "whatsapp",
+            "user_id": "user-invalid",
+            "sent_at": (sent_at + timedelta(seconds=10)).isoformat(),
+            "payload": {
+                "type": "location",
+                "latitude": 4.6,
+                "longitude": -73.9,
+            },
+        },
+    )
+    body = response.json()
+    assert response.status_code == 200
+    assert body["status"] == "discarded"
+    assert body["detail"] == "osm_response_invalid"
+
+    status_resp = await client.get("/api/v1/status")
+    metrics_body = status_resp.json()["metrics"]
+    assert metrics_body == {
+        "attempts": 1,
+        "successes": 0,
+        "http_errors": 0,
+        "network_errors": 0,
+        "invalid_responses": 1,
+        "retries": 0,
     }
 

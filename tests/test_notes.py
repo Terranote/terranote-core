@@ -5,6 +5,8 @@ from httpx import AsyncClient
 
 from tests.conftest import FakeOSMClient
 
+from app.config import settings
+
 
 @pytest.mark.asyncio
 async def test_create_anonymous_note_with_fake_publisher(client: AsyncClient) -> None:
@@ -28,7 +30,7 @@ async def test_create_anonymous_note_with_fake_publisher(client: AsyncClient) ->
 async def test_create_anonymous_note_http_error(
     client: AsyncClient, fake_osm_client: FakeOSMClient
 ) -> None:
-    fake_osm_client.queue_http_error(503, times=3)
+    fake_osm_client.queue_http_error(503, times=settings.osm_max_retries + 1)
     response = await client.post(
         "/api/v1/notes/anonymous",
         json={
@@ -41,12 +43,25 @@ async def test_create_anonymous_note_http_error(
     assert response.status_code == 503
     assert body["detail"] == "osm_api_error"
 
+    status_resp = await client.get("/api/v1/status")
+    metrics_body = status_resp.json()["metrics"]
+    attempts = settings.osm_max_retries + 1
+    retries = settings.osm_max_retries
+    assert metrics_body == {
+        "attempts": attempts,
+        "successes": 0,
+        "http_errors": attempts,
+        "network_errors": 0,
+        "invalid_responses": 0,
+        "retries": retries,
+    }
+
 
 @pytest.mark.asyncio
 async def test_create_anonymous_note_network_error(
     client: AsyncClient, fake_osm_client: FakeOSMClient
 ) -> None:
-    fake_osm_client.queue_request_error(times=3)
+    fake_osm_client.queue_request_error(times=settings.osm_max_retries + 1)
     response = await client.post(
         "/api/v1/notes/anonymous",
         json={
@@ -58,3 +73,45 @@ async def test_create_anonymous_note_network_error(
     body = response.json()
     assert response.status_code == 502
     assert body["detail"] == "osm_api_unreachable"
+
+    status_resp = await client.get("/api/v1/status")
+    metrics_body = status_resp.json()["metrics"]
+    attempts = settings.osm_max_retries + 1
+    retries = settings.osm_max_retries
+    assert metrics_body == {
+        "attempts": attempts,
+        "successes": 0,
+        "http_errors": 0,
+        "network_errors": attempts,
+        "invalid_responses": 0,
+        "retries": retries,
+    }
+
+
+@pytest.mark.asyncio
+async def test_create_anonymous_note_invalid_response(
+    client: AsyncClient, fake_osm_client: FakeOSMClient
+) -> None:
+    fake_osm_client.queue_invalid_response()
+    response = await client.post(
+        "/api/v1/notes/anonymous",
+        json={
+            "latitude": 6.5,
+            "longitude": -76.5,
+            "text": "Nota inválida.",
+        },
+    )
+    body = response.json()
+    assert response.status_code == 502
+    assert body["detail"] == "osm_response_invalid"
+
+    status_resp = await client.get("/api/v1/status")
+    metrics_body = status_resp.json()["metrics"]
+    assert metrics_body == {
+        "attempts": 1,
+        "successes": 0,
+        "http_errors": 0,
+        "network_errors": 0,
+        "invalid_responses": 1,
+        "retries": 0,
+    }

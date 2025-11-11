@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     osm_api_timeout_seconds: float = 10.0
     osm_max_retries: int = 2
     osm_retry_backoff_seconds: float = 0.2
+    notifier_whatsapp_endpoint: str | None = None
+    notifier_telegram_endpoint: str | None = None
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

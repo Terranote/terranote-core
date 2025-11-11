@@ -2,16 +2,17 @@ from collections.abc import AsyncIterator, Iterator
 from datetime import datetime, timezone
 from pathlib import Path
 import sys
-from typing import List
+from typing import List, Optional
 
 import httpx
 import pytest
-from httpx import ASGITransport, AsyncClient
+from httpx import ASGITransport, AsyncClient, MockTransport
 
 ROOT_PATH = Path(__file__).resolve().parents[1]
 if str(ROOT_PATH) not in sys.path:
     sys.path.insert(0, str(ROOT_PATH))
 
+from app import config  # noqa: E402
 from app.container import session_store, session_manager, note_builder  # noqa: E402
 from app.dependencies import (  # noqa: E402
     get_interaction_service,
@@ -72,11 +73,20 @@ class FakeOSMClient(OSMClient):
 
 
 class DummyNotificationService(NotificationService):
-    def __init__(self) -> None:
+    def __init__(self, transport: Optional[httpx.BaseTransport] = None) -> None:
+        super().__init__()
+        if transport is not None:
+            self._client = httpx.AsyncClient(timeout=5.0, transport=transport)
         self.notifications: List[NoteNotification] = []
 
     async def notify_note_created(self, notification: NoteNotification) -> None:
+        await super().notify_note_created(notification)
         self.notifications.append(notification)
+
+
+@pytest.fixture(autouse=True)
+def _override_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(config, "settings", config.Settings(), raising=False)
 
 
 @pytest.fixture(autouse=True)
@@ -94,8 +104,15 @@ def fake_osm_client() -> FakeOSMClient:
 
 
 @pytest.fixture()
-def notification_service() -> DummyNotificationService:
-    return DummyNotificationService()
+def notification_service(monkeypatch: pytest.MonkeyPatch) -> DummyNotificationService:
+    async def _mock_endpoint(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"status": "ok"})
+
+    monkeypatch.setenv("NOTIFIER_WHATSAPP_ENDPOINT", "http://test-notifier/whatsapp")
+    monkeypatch.setenv("NOTIFIER_TELEGRAM_ENDPOINT", "http://test-notifier/telegram")
+    transport = MockTransport(_mock_endpoint)
+    service = DummyNotificationService(transport=transport)
+    return service
 
 
 @pytest.fixture(autouse=True)

@@ -39,6 +39,7 @@
 
 - **Uso**: Cuando el módulo central crea una nota, notifica al adaptador para que envíe el resultado al usuario.
 - **Endpoint sugerido**: `POST /callbacks/note-created` (propio de cada adaptador).
+- **URL configurable**: cada canal (WhatsApp, Telegram) puede tener su propio endpoint; se recomienda exponerlo mediante variables de entorno (`NOTIFIER_ENDPOINT_WHATSAPP`, etc.).
 - **Payload**:
 
 ```json
@@ -55,5 +56,6 @@
 ```
 
 - **Respuesta esperada**: `200 OK` o `202 Accepted`.
+- **Reintentos**: el módulo central puede reintentar en caso de errores `5xx` o fallos de red; el adaptador debe tratar la operación como idempotente.
 - **Reintentos**: El adaptador debería manejar idempotencia; el módulo central puede reintentar en caso de error temporal (en fases posteriores).
 

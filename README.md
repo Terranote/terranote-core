@@ -46,6 +46,14 @@ Variables de entorno relevantes:
 .venv/bin/pytest
 ```
 
+Para generar reporte de cobertura:
+
+```bash
+.venv/bin/pytest --cov --cov-report=term-missing
+```
+
+El workflow de GitHub Actions (`.github/workflows/ci.yml`) ejecuta lint (ruff, black, mypy) y pruebas con cobertura en cada push/PR.
+
 ## Observabilidad
 
 - El endpoint `GET /api/v1/status` expone métricas agregadas de publicación de notas (intentos, éxitos y fallos).
@@ -80,3 +88,13 @@ Prometheus (job `terranote-core`) hace scrape cada 10 segundos a `/metrics`.
 docker build -t terranote-core:dev .
 docker run -p 8000:8000 terranote-core:dev
 ```
+
+## Fakes disponibles
+
+- `FakeOSMClient`: fixture en `tests/conftest.py`, ideal para pruebas unitarias en memoria.
+- `fakes/osm_api`: servicio HTTP emulado disponible en Docker (ver sección Prometheus) con escenarios configurables vía `/__control__/scenario`.
+
+## Fakes disponibles
+
+- `FakeOSMClient` (pruebas unitarias): se inyecta vía fixture y trabaja en memoria.
+- `fakes/osm_api` (fake HTTP): se expone en Docker/Jupyter para escenarios end-to-end; configurable mediante `/__control__/scenario`.

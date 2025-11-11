@@ -1,0 +1,11 @@
+[run]
+branch = true
+source =
+    app
+    fakes
+
+[report]
+show_missing = true
+skip_covered = true
+
+

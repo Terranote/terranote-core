@@ -41,6 +41,9 @@ Servicio FastAPI que orquesta la creación de notas anónimas en OpenStreetMap a
   - `http_error` (HTTP status controlado)
   - `network_error` (simula fallo de conexión)
   - `invalid_response` (payload inválido)
+- Se complementa con dos fakes:
+  - **`FakeOSMClient`**: fixture en `tests/conftest.py`, trabaja en memoria y es ideal para pruebas unitarias rápidas.
+  - **`fakes/osm_api`**: servidor HTTP emulado, útil para pruebas end-to-end/Docker.
 
 ## Métricas
 - `terranote_note_publication_attempts_total`

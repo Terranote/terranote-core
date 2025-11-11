@@ -1,12 +1,13 @@
 import pytest
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 
 from fakes.osm_api import app, state
 
 
 @pytest.mark.asyncio
 async def test_fake_osm_success_scenario() -> None:
-    async with AsyncClient(app=app, base_url="http://fake-osm") as client:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://fake-osm") as client:
         state.reset()
         response = await client.post(
             "/api/0.6/notes.json",
@@ -19,7 +20,8 @@ async def test_fake_osm_success_scenario() -> None:
 
 @pytest.mark.asyncio
 async def test_fake_osm_http_error_scenario() -> None:
-    async with AsyncClient(app=app, base_url="http://fake-osm") as client:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://fake-osm") as client:
         await client.post(
             "/__control__/scenario",
             json={"mode": "http_error", "status_code": 429, "delay_ms": 0},

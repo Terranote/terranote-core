@@ -6,7 +6,7 @@ from typing import List
 
 import httpx
 import pytest
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 
 ROOT_PATH = Path(__file__).resolve().parents[1]
 if str(ROOT_PATH) not in sys.path:
@@ -65,7 +65,7 @@ class FakeOSMClient(OSMClient):
             created_at=created_at,
         )
 
-    async def close(self) -> None:  # pragma: no cover - no resources to close
+    async def close(self) -> None:  # pragma: no cover - no recursos
         return None
 
 
@@ -105,6 +105,7 @@ async def client(fake_osm_client: FakeOSMClient) -> AsyncIterator[AsyncClient]:
     app.dependency_overrides[get_note_publisher] = lambda: note_publisher
     app.dependency_overrides[get_interaction_service] = lambda: interaction_service
 
-    async with AsyncClient(app=app, base_url="http://testserver") as async_client:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as async_client:
         yield async_client
 

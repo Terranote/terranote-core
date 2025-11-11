@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -21,7 +21,7 @@ async def create_anonymous_note(
     request: NoteCreateRequest,
     publisher: NotePublisher = Depends(get_note_publisher),
 ) -> NoteCreateResponse:
-    created_at = request.created_at or datetime.now(timezone.utc)
+    created_at = request.created_at or datetime.now(datetime.UTC)
     draft = NoteDraft(
         text=f"{request.text}\n-- {settings.note_system_identifier}",
         latitude=request.latitude,

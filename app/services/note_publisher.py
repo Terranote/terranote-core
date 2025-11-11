@@ -23,11 +23,14 @@ class NoteCreationResult:
 
 
 class NotePublisher:
+    """Publica notas OSM manejando reintentos, métricas y logging."""
+
     def __init__(self, osm_client: OSMClient) -> None:
         self._osm_client = osm_client
         self._logger = logging.getLogger(self.__class__.__name__)
 
     async def create_anonymous_note(self, draft: NoteDraft) -> NoteCreationResult:
+        """Intenta publicar la nota anónima y retorna el resultado."""
         attempt = 0
         max_retries = settings.osm_max_retries
         backoff = settings.osm_retry_backoff_seconds

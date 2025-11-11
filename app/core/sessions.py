@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+"""Gestión de sesiones para agrupar interacciones de un usuario."""
+
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
@@ -10,6 +12,8 @@ from app.schemas.interactions import InteractionChannel
 
 @dataclass
 class LocationRecord:
+    """Ubicación enviada por el usuario junto con el instante de recepción."""
+
     latitude: float
     longitude: float
     received_at: datetime
@@ -17,6 +21,8 @@ class LocationRecord:
 
 @dataclass
 class SessionState:
+    """Estado mutable asociado a una sesión de creación de nota."""
+
     user_key: str
     channel: InteractionChannel
     user_id: str
@@ -26,10 +32,12 @@ class SessionState:
     location: Optional[LocationRecord] = None
 
     def add_text(self, text: str, timestamp: datetime) -> None:
+        """Registra un texto nuevo y actualiza la última interacción."""
         self.texts.append(text)
         self.last_interaction_at = timestamp
 
     def set_location(self, latitude: float, longitude: float, timestamp: datetime) -> None:
+        """Asocia la ubicación actual a la sesión."""
         self.location = LocationRecord(
             latitude=latitude,
             longitude=longitude,
@@ -38,16 +46,20 @@ class SessionState:
         self.last_interaction_at = timestamp
 
     def clear(self) -> None:
+        """Vacía los datos acumulados."""
         self.texts.clear()
         self.location = None
 
     def has_text(self) -> bool:
+        """True si la sesión contiene texto pendiente."""
         return len(self.texts) > 0
 
     def has_location(self) -> bool:
+        """True si la sesión dispone de una ubicación."""
         return self.location is not None
 
     def expired(self, timestamp: datetime) -> bool:
+        """Verifica expiración por inactividad o duración máxima."""
         return (
             timestamp - self.started_at
             > timedelta(seconds=settings.session_max_duration_seconds)

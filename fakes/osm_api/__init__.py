@@ -52,10 +52,12 @@ def _note_payload(lat: float, lon: float, text: str) -> dict:
 
 
 def create_app() -> FastAPI:
+    """Crea una aplicación FastAPI que simula la API OSM de creación de notas."""
     app = FastAPI(title="Fake OSM API", version="0.1.0")
 
     @app.post("/__control__/scenario", summary="Configura el escenario del fake OSM")
     async def configure_scenario(payload: ScenarioPayload) -> ScenarioPayload:
+        """Permite definir el escenario actual de respuesta del fake."""
         state.mode = payload.mode
         state.status_code = payload.status_code
         state.delay_ms = payload.delay_ms
@@ -63,6 +65,7 @@ def create_app() -> FastAPI:
 
     @app.post("/__control__/reset", summary="Reinicia el escenario por defecto")
     async def reset_scenario() -> dict[str, str]:
+        """Restablece el comportamiento por defecto (modo success, sin delay)."""
         state.reset()
         return {"detail": "reset"}
 
@@ -71,6 +74,7 @@ def create_app() -> FastAPI:
         summary="Endpoint de creación de notas OSM (fake)",
     )
     async def create_note(lat: float, lon: float, text: str) -> dict:
+        """Simula la creación de una nota, aplicando el escenario configurado."""
         if state.delay_ms:
             await asyncio.sleep(state.delay_ms / 1000)
 

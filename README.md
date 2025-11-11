@@ -58,7 +58,21 @@ Variables de entorno relevantes:
 docker compose -f docker/compose.prometheus.yml up --build
 ```
 
-Esto levantará el servicio `terranote-core` (puerto `8000`) y Prometheus (puerto `9090`) con un scrape cada 10 segundos apuntando a `/metrics`.
+Esto levantará el servicio `terranote-core` (puerto `8000`), el fake de OSM (`fake-osm`, puerto `8080`) y Prometheus (`9090`). El fake expone `/api/0.6/notes.json` con un escenario configurable vía:
+
+```bash
+curl -X POST http://localhost:8080/__control__/scenario \
+  -H 'Content-Type: application/json' \
+  -d '{"mode":"http_error","status_code":429}'
+```
+
+Para volver al comportamiento por defecto:
+
+```bash
+curl -X POST http://localhost:8080/__control__/reset
+```
+
+Prometheus (job `terranote-core`) hace scrape cada 10 segundos a `/metrics`.
 
 ## Docker
 

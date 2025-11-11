@@ -6,12 +6,26 @@ services:
     container_name: terranote-core
     environment:
       - LOGLEVEL=info
+      - OSM_API_BASE_URL=http://fake-osm:8080
+    depends_on:
+      - fake-osm
     ports:
       - "8000:8000"
     command: >
       uvicorn app.main:app
       --host 0.0.0.0
       --port 8000
+  fake-osm:
+    build:
+      context: ..
+      dockerfile: ../Dockerfile
+    container_name: fake-osm
+    command: >
+      uvicorn fakes.osm_api:app
+      --host 0.0.0.0
+      --port 8080
+    ports:
+      - "8080:8080"
   prometheus:
     image: prom/prometheus:v3.0.0
     container_name: terranote-prometheus

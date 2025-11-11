@@ -14,6 +14,7 @@ RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
 
 COPY app ./app
+COPY fakes ./fakes
 
 EXPOSE 8000
 

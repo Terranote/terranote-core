@@ -205,3 +205,51 @@ async def test_publisher_http_error_returns_discarded(
     assert body["status"] == "discarded"
     assert body["detail"] == "osm_api_error"
 
+
+@pytest.mark.asyncio
+async def test_publisher_retries_on_server_error(
+    client: AsyncClient,
+    fake_osm_client: FakeOSMClient,
+) -> None:
+    fake_osm_client.queue_http_error(503)
+
+    sent_at = datetime.now(timezone.utc)
+    await client.post(
+        "/api/v1/interactions",
+        json={
+            "channel": "whatsapp",
+            "user_id": "user-retry",
+            "sent_at": sent_at.isoformat(),
+            "payload": {"type": "text", "text": "Primera interacción"},
+        },
+    )
+
+    response = await client.post(
+        "/api/v1/interactions",
+        json={
+            "channel": "whatsapp",
+            "user_id": "user-retry",
+            "sent_at": (sent_at + timedelta(seconds=8)).isoformat(),
+            "payload": {
+                "type": "location",
+                "latitude": 4.2,
+                "longitude": -73.95,
+            },
+        },
+    )
+
+    body = response.json()
+    assert response.status_code == 200
+    assert body["status"] == "note_created"
+
+    status_resp = await client.get("/api/v1/status")
+    metrics_body = status_resp.json()["metrics"]
+    assert metrics_body == {
+        "attempts": 2,
+        "successes": 1,
+        "http_errors": 1,
+        "network_errors": 0,
+        "invalid_responses": 0,
+        "retries": 1,
+    }
+

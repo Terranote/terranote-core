@@ -36,6 +36,8 @@ Variables de entorno relevantes:
 
 - `OSM_API_BASE_URL`: URL base del API de OpenStreetMap (por defecto `https://api.openstreetmap.org`).
 - `OSM_API_TIMEOUT_SECONDS`: timeout de peticiones en segundos (por defecto `10.0`).
+- `OSM_MAX_RETRIES`: número máximo de reintentos para fallas temporales (por defecto `2`).
+- `OSM_RETRY_BACKOFF_SECONDS`: factor base de backoff exponencial para reintentos (por defecto `0.2`).
 - Los logs usan el logger estándar de Python; configura `LOGLEVEL` antes de ejecutar uvicorn para ajustar la verbosidad (por ejemplo, `LOGLEVEL=info`).
 
 ## Pruebas

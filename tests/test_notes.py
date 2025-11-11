@@ -28,7 +28,7 @@ async def test_create_anonymous_note_with_fake_publisher(client: AsyncClient) ->
 async def test_create_anonymous_note_http_error(
     client: AsyncClient, fake_osm_client: FakeOSMClient
 ) -> None:
-    fake_osm_client.queue_http_error(503)
+    fake_osm_client.queue_http_error(503, times=3)
     response = await client.post(
         "/api/v1/notes/anonymous",
         json={
@@ -46,7 +46,7 @@ async def test_create_anonymous_note_http_error(
 async def test_create_anonymous_note_network_error(
     client: AsyncClient, fake_osm_client: FakeOSMClient
 ) -> None:
-    fake_osm_client.queue_request_error()
+    fake_osm_client.queue_request_error(times=3)
     response = await client.post(
         "/api/v1/notes/anonymous",
         json={

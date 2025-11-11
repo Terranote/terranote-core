@@ -7,6 +7,7 @@ class NoteMetrics(BaseModel):
     http_errors: int
     network_errors: int
     invalid_responses: int
+    retries: int
 
 
 class HealthStatus(BaseModel):

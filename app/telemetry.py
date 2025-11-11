@@ -12,6 +12,7 @@ class NotePublicationSnapshot:
     http_errors: int
     network_errors: int
     invalid_responses: int
+    retries: int
 
 
 class Telemetry:
@@ -23,6 +24,7 @@ class Telemetry:
             "note_publication_http_errors": 0,
             "note_publication_network_errors": 0,
             "note_publication_invalid_responses": 0,
+            "note_publication_retries": 0,
         }
 
     def increment(self, name: str, value: int = 1) -> None:
@@ -44,6 +46,7 @@ class Telemetry:
                 invalid_responses=self._counters.get(
                     "note_publication_invalid_responses", 0
                 ),
+                retries=self._counters.get("note_publication_retries", 0),
             )
 
 

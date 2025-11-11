@@ -2,6 +2,7 @@ from collections.abc import AsyncIterator, Iterator
 from datetime import datetime, timezone
 from pathlib import Path
 import sys
+from typing import List
 
 import httpx
 import pytest
@@ -27,21 +28,25 @@ from app.telemetry import metrics  # noqa: E402
 class FakeOSMClient(OSMClient):
     def __init__(self) -> None:
         self._counter = 0
-        self._next_exception: Exception | None = None
+        self._exceptions: List[Exception] = []
 
-    def queue_http_error(self, status_code: int) -> None:
+    def queue_http_error(self, status_code: int, times: int = 1) -> None:
         request = httpx.Request("POST", "https://api.test-osm.org/api/0.6/notes.json")
-        response = httpx.Response(status_code, request=request)
-        self._next_exception = httpx.HTTPStatusError(
-            "HTTP error", request=request, response=response
-        )
+        for _ in range(times):
+            response = httpx.Response(status_code, request=request)
+            self._exceptions.append(
+                httpx.HTTPStatusError(
+                    "HTTP error", request=request, response=response
+                )
+            )
 
-    def queue_request_error(self) -> None:
+    def queue_request_error(self, times: int = 1) -> None:
         request = httpx.Request("POST", "https://api.test-osm.org/api/0.6/notes.json")
-        self._next_exception = httpx.RequestError("network error", request=request)
+        for _ in range(times):
+            self._exceptions.append(httpx.RequestError("network error", request=request))
 
     def queue_invalid_response(self) -> None:
-        self._next_exception = ValueError("invalid response")
+        self._exceptions.append(ValueError("invalid response"))
 
     async def create_anonymous_note(
         self,
@@ -49,10 +54,8 @@ class FakeOSMClient(OSMClient):
         longitude: float,
         text: str,
     ) -> OSMNoteResponse:
-        if self._next_exception is not None:
-            exc = self._next_exception
-            self._next_exception = None
-            raise exc
+        if self._exceptions:
+            raise self._exceptions.pop(0)
 
         self._counter += 1
         created_at = datetime.now(timezone.utc)
@@ -78,6 +81,14 @@ def _reset_session_store() -> Iterator[None]:
 @pytest.fixture()
 def fake_osm_client() -> FakeOSMClient:
     return FakeOSMClient()
+
+
+@pytest.fixture(autouse=True)
+def _patch_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def _noop(_: float) -> None:
+        return None
+
+    monkeypatch.setattr("app.services.note_publisher.asyncio.sleep", _noop)
 
 
 @pytest.fixture()

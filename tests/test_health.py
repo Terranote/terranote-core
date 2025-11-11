@@ -14,6 +14,7 @@ async def test_health_status_ok(client: AsyncClient) -> None:
         "http_errors": 0,
         "network_errors": 0,
         "invalid_responses": 0,
+        "retries": 0,
     }
 
 

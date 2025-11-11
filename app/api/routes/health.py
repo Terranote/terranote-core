@@ -17,6 +17,7 @@ async def read_status() -> HealthStatus:
             http_errors=snapshot.http_errors,
             network_errors=snapshot.network_errors,
             invalid_responses=snapshot.invalid_responses,
+            retries=snapshot.retries,
         ),
     )
 

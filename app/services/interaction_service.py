@@ -7,6 +7,7 @@ from app.schemas.interactions import (
     InteractionResponse,
     NotePreview,
 )
+from app.services.exceptions import NotePublishingError
 from app.services.note_builder import NoteBuilder
 from app.services.note_publisher import NotePublisher
 
@@ -53,7 +54,13 @@ class InteractionService:
     async def _map_decision(self, decision: SessionDecision) -> InteractionResponse:
         if decision.status == "note_ready" and decision.note is not None:
             draft = self._note_builder.build(decision.note)
-            result = await self._note_publisher.create_anonymous_note(draft)
+            try:
+                result = await self._note_publisher.create_anonymous_note(draft)
+            except NotePublishingError as exc:
+                return InteractionResponse(
+                    status=InteractionOutcomeStatus.discarded,
+                    detail=exc.args[0],
+                )
             return InteractionResponse(
                 status=InteractionOutcomeStatus.note_created,
                 note=NotePreview(

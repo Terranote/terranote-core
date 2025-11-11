@@ -3,11 +3,15 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import FakeOSMClient
+
 from app.container import session_store
 
 
 @pytest.mark.asyncio
-async def test_interaction_text_then_location_creates_note(client: AsyncClient) -> None:
+async def test_interaction_text_then_location_creates_note(
+    client: AsyncClient,
+) -> None:
     sent_at = datetime.now(timezone.utc)
     response = await client.post(
         "/api/v1/interactions",
@@ -163,4 +167,41 @@ async def test_location_then_text_creates_note(client: AsyncClient) -> None:
     assert text_response.status_code == 200
     assert text_body["status"] == "note_created"
     assert "Hueco" in text_body["note"]["text"]
+
+
+@pytest.mark.asyncio
+async def test_publisher_http_error_returns_discarded(
+    client: AsyncClient,
+    fake_osm_client: FakeOSMClient,
+) -> None:
+    fake_osm_client.queue_http_error(429)
+
+    sent_at = datetime.now(timezone.utc)
+    await client.post(
+        "/api/v1/interactions",
+        json={
+            "channel": "whatsapp",
+            "user_id": "user-http-error",
+            "sent_at": sent_at.isoformat(),
+            "payload": {"type": "text", "text": "Texto previo"},
+        },
+    )
+
+    response = await client.post(
+        "/api/v1/interactions",
+        json={
+            "channel": "whatsapp",
+            "user_id": "user-http-error",
+            "sent_at": (sent_at + timedelta(seconds=5)).isoformat(),
+            "payload": {
+                "type": "location",
+                "latitude": 4.1,
+                "longitude": -73.9,
+            },
+        },
+    )
+    body = response.json()
+    assert response.status_code == 200
+    assert body["status"] == "discarded"
+    assert body["detail"] == "osm_api_error"
 

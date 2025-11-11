@@ -54,6 +54,16 @@ class InteractionService:
 
         return await self._map_decision(decision)
 
+    async def process_interaction_batch(
+        self,
+        requests: list[InteractionRequest],
+    ) -> list[InteractionResponse]:
+        ordered = sorted(requests, key=lambda r: r.sent_at)
+        responses: list[InteractionResponse] = []
+        for request in ordered:
+            responses.append(await self.process_interaction(request))
+        return responses
+
     async def _map_decision(self, decision: SessionDecision) -> InteractionResponse:
         if decision.status == "note_ready" and decision.note is not None:
             draft = self._note_builder.build(decision.note)

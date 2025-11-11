@@ -376,3 +376,42 @@ async def test_publisher_invalid_response_discarded(
         "retries": 0,
     }
 
+
+@pytest.mark.asyncio
+async def test_batch_offline_processing(
+    client: AsyncClient,
+    notification_service: DummyNotificationService,
+) -> None:
+    base = datetime.now(timezone.utc) - timedelta(minutes=5)
+    payload = {
+        "interactions": [
+            {
+                "channel": "whatsapp",
+                "user_id": "user-batch",
+                "sent_at": (base + timedelta(seconds=15)).isoformat(),
+                "payload": {
+                    "type": "location",
+                    "latitude": 4.8,
+                    "longitude": -74.05,
+                },
+            },
+            {
+                "channel": "whatsapp",
+                "user_id": "user-batch",
+                "sent_at": base.isoformat(),
+                "payload": {
+                    "type": "text",
+                    "text": "Reporte enviado sin conexión.",
+                },
+            },
+        ]
+    }
+
+    response = await client.post("/api/v1/interactions/batch", json=payload)
+    body = response.json()
+    assert response.status_code == 200
+    assert len(body) == 2
+    assert body[0]["status"] == "accepted"
+    assert body[1]["status"] == "note_created"
+    assert len(notification_service.notifications) == 1
+

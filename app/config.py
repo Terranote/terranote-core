@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     osm_retry_backoff_seconds: float = 0.2
     notifier_whatsapp_endpoint: str | None = None
     notifier_telegram_endpoint: str | None = None
+    offline_gap_seconds: int = 5
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

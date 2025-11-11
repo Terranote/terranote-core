@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Union, List
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -63,5 +63,9 @@ class InteractionResponse(BaseModel):
     status: InteractionOutcomeStatus
     detail: Optional[str] = None
     note: Optional[NotePreview] = None
+
+
+class InteractionBatchRequest(BaseModel):
+    interactions: List[InteractionRequest]
 
 

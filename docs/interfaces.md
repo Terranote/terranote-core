@@ -59,3 +59,9 @@
 - **Reintentos**: el módulo central puede reintentar en caso de errores `5xx` o fallos de red; el adaptador debe tratar la operación como idempotente.
 - **Reintentos**: El adaptador debería manejar idempotencia; el módulo central puede reintentar en caso de error temporal (en fases posteriores).
 
+## Lote de interacciones (`POST /api/v1/interactions/batch`)
+
+- **Uso**: enviar mensajes acumulados (offline) en una sola llamada.
+- **Payload**: lista ordenada o desordenada de `InteractionRequest`; el módulo central los ordena por `sent_at`.
+- **Respuesta**: lista de `InteractionResponse` correspondientes a cada interacción procesada.
+

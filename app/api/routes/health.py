@@ -24,5 +24,3 @@ async def read_status() -> HealthStatus:
             retries=snapshot.retries,
         ),
     )
-
-

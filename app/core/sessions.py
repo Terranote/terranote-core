@@ -64,11 +64,10 @@ class SessionState:
 
     def expired(self, timestamp: datetime) -> bool:
         """Verifica expiración por inactividad o duración máxima."""
-        return (
-            timestamp - self.started_at
-            > timedelta(seconds=settings.session_max_duration_seconds)
-            or timestamp - self.last_interaction_at
-            > timedelta(seconds=settings.session_max_gap_seconds)
+        return timestamp - self.started_at > timedelta(
+            seconds=settings.session_max_duration_seconds
+        ) or timestamp - self.last_interaction_at > timedelta(
+            seconds=settings.session_max_gap_seconds
         )
 
 
@@ -204,9 +203,7 @@ class SessionManager:
             return SessionDecision(status="note_ready", note=note)
 
         detail = (
-            "missing_location_timeout"
-            if session.has_text()
-            else "missing_text_timeout"
+            "missing_location_timeout" if session.has_text() else "missing_text_timeout"
         )
         self._store.delete(session.channel, session.user_id)
         return SessionDecision(status="discarded", detail=detail)
@@ -222,4 +219,3 @@ class SessionManager:
             started_at=session.started_at,
             completed_at=timestamp,
         )
-

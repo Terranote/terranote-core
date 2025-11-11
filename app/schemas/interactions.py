@@ -67,5 +67,3 @@ class InteractionResponse(BaseModel):
 
 class InteractionBatchRequest(BaseModel):
     interactions: list[InteractionRequest]
-
-

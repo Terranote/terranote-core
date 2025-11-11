@@ -69,10 +69,7 @@ class NotePublisher:
                 )
             except httpx.HTTPStatusError as exc:
                 metrics.increment("note_publication_http_errors")
-                if (
-                    attempt < max_retries
-                    and 500 <= exc.response.status_code < 600
-                ):
+                if attempt < max_retries and 500 <= exc.response.status_code < 600:
                     attempt += 1
                     metrics.increment("note_publication_retries")
                     self._logger.warning(

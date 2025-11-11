@@ -13,5 +13,3 @@ class NoteMetrics(BaseModel):
 class HealthStatus(BaseModel):
     status: str
     metrics: NoteMetrics
-
-

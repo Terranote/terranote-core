@@ -413,4 +413,3 @@ async def test_batch_offline_processing(
     assert body[0]["status"] == "accepted"
     assert body[1]["status"] == "note_created"
     assert len(notification_service.notifications) == 1
-

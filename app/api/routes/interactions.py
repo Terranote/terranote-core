@@ -37,5 +37,3 @@ async def receive_interaction_batch(
     service: InteractionService = Depends(get_interaction_service),
 ) -> list[InteractionResponse]:
     return await service.process_interaction_batch(payload.interactions)
-
-

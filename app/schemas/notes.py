@@ -14,5 +14,3 @@ class NoteCreateRequest(BaseModel):
 
 class NoteCreateResponse(NotePreview):
     pass
-
-

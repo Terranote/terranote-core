@@ -17,5 +17,3 @@ interaction_service = InteractionService(
     note_publisher=note_publisher,
     notification_service=notification_service,
 )
-
-

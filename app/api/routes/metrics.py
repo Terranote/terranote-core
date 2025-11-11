@@ -14,4 +14,3 @@ router = APIRouter()
 async def prometheus_metrics() -> Response:
     data = metrics.export_prometheus()
     return Response(content=data, media_type=CONTENT_TYPE_LATEST)
-

@@ -73,7 +73,3 @@ class OSMClient:
             raise ValueError("Invalid OSM API response: missing expected fields")
         created_at = _parse_osm_datetime(str(created_raw))
         return OSMNoteResponse(note_id=note_id, url=url, created_at=created_at)
-
-
-
-

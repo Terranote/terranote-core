@@ -41,6 +41,3 @@ def test_parse_osm_datetime_supports_z_suffix() -> None:
     parsed = _parse_osm_datetime("2025-11-11T10:00:00Z")
     assert parsed.tzinfo is not None
     assert parsed == datetime(2025, 11, 11, 10, 0, tzinfo=UTC)
-
-
-

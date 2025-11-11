@@ -40,9 +40,7 @@ class FakeOSMClient(OSMClient):
         for _ in range(times):
             response = httpx.Response(status_code, request=request)
             self._exceptions.append(
-                httpx.HTTPStatusError(
-                    "HTTP error", request=request, response=response
-                )
+                httpx.HTTPStatusError("HTTP error", request=request, response=response)
             )
 
     def queue_request_error(self, times: int = 1) -> None:
@@ -151,4 +149,3 @@ async def client(
         transport=transport, base_url="http://testserver"
     ) as async_client:
         yield async_client
-

@@ -32,4 +32,3 @@ async def test_fake_osm_http_error_scenario() -> None:
         )
         assert response.status_code == 429
         await client.post("/__control__/reset")
-

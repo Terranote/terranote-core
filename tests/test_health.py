@@ -16,5 +16,3 @@ async def test_health_status_ok(client: AsyncClient) -> None:
         "invalid_responses": 0,
         "retries": 0,
     }
-
-

@@ -24,4 +24,3 @@ def get_notification_service() -> NotificationService:
 
 def get_osm_client() -> OSMClient:
     return osm_client
-

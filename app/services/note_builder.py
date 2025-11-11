@@ -29,4 +29,3 @@ class NoteBuilder:
             longitude=candidate.longitude,
             created_at=candidate.completed_at,
         )
-

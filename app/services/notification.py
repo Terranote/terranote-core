@@ -86,4 +86,3 @@ class NotificationService:
         if channel == InteractionChannel.telegram:
             return settings.notifier_telegram_endpoint
         return None
-

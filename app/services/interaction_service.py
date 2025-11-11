@@ -110,5 +110,3 @@ class InteractionService:
             status=InteractionOutcomeStatus.accepted,
             detail=decision.detail,
         )
-
-

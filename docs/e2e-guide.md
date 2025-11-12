@@ -1,6 +1,6 @@
 # Guía de pruebas end-to-end (fase 1)
 
-Esta guía cubre la ejecución local de los flujos end-to-end utilizando los repositorios `terranote-infra` y `terranote-tests`. Para la visión global de Terranote, consulta el índice maestro propuesto en `terranote-docs` (ver `docs/terranote-docs-structure.md`).
+Esta guía cubre la ejecución local de los flujos end-to-end utilizando los repositorios `terranote-infra` y `terranote-tests`. Para la visión global de Terranote, consulta el índice maestro propuesto en `terranote-docs` (ver `https://github.com/Terranote/terranote-docs/blob/main/docs/structure.md`).
 
 ## 0. Prerrequisitos
 

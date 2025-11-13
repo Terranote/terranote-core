@@ -19,10 +19,13 @@ class OSMNoteResponse:
 
 
 def _parse_osm_datetime(raw: str) -> datetime:
-    """Convierte la marca de tiempo ISO de OSM en un `datetime` UTC."""
+    """Convierte la marca de tiempo de OSM en un `datetime` UTC."""
 
     if raw.endswith("Z"):
         raw = raw[:-1] + "+00:00"
+    if raw.endswith(" UTC"):
+        naive = datetime.strptime(raw, "%Y-%m-%d %H:%M:%S %Z")
+        return naive.replace(tzinfo=UTC)
     return datetime.fromisoformat(raw).astimezone(UTC)
 
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from threading import Lock
 
-from prometheus_client import CollectorRegistry, Counter, generate_latest
+from prometheus_client import CollectorRegistry, Counter, Histogram, generate_latest
 
 
 @dataclass(frozen=True)
@@ -48,6 +48,7 @@ class Telemetry:
     def __init__(self) -> None:
         self._lock = Lock()
         self._initialize_counters()
+        self._initialize_histograms()
 
     def _initialize_counters(self) -> None:
         self._registry = CollectorRegistry()
@@ -60,6 +61,35 @@ class Telemetry:
                 definition["description"],
                 registry=self._registry,
             )
+
+    def _initialize_histograms(self) -> None:
+        """Initialize histogram metrics for HTTP requests and OSM API calls."""
+        self._http_request_duration = Histogram(
+            "terranote_http_request_duration_seconds",
+            "HTTP request duration in seconds",
+            ["method", "route", "status"],
+            buckets=[0.01, 0.05, 0.1, 0.5, 1, 2, 5],
+            registry=self._registry,
+        )
+        self._http_requests_total = Counter(
+            "terranote_http_requests_total",
+            "Total number of HTTP requests",
+            ["method", "route", "status"],
+            registry=self._registry,
+        )
+        self._osm_api_call_duration = Histogram(
+            "terranote_osm_api_call_duration_seconds",
+            "OSM API call duration in seconds",
+            ["status"],
+            buckets=[0.01, 0.05, 0.1, 0.5, 1, 2, 5],
+            registry=self._registry,
+        )
+        self._osm_api_calls_total = Counter(
+            "terranote_osm_api_calls_total",
+            "Total number of OSM API calls",
+            ["status"],
+            registry=self._registry,
+        )
 
     def increment(self, name: str, value: int = 1) -> None:
         with self._lock:
@@ -84,6 +114,25 @@ class Telemetry:
                 ),
                 retries=self._counters.get("note_publication_retries", 0),
             )
+
+    def record_http_request(
+        self, method: str, route: str, status: int, duration: float
+    ) -> None:
+        """Record HTTP request metrics."""
+        with self._lock:
+            status_str = str(status)
+            self._http_requests_total.labels(
+                method=method, route=route, status=status_str
+            ).inc()
+            self._http_request_duration.labels(
+                method=method, route=route, status=status_str
+            ).observe(duration)
+
+    def record_osm_api_call(self, status: str, duration: float) -> None:
+        """Record OSM API call metrics."""
+        with self._lock:
+            self._osm_api_calls_total.labels(status=status).inc()
+            self._osm_api_call_duration.labels(status=status).observe(duration)
 
     def export_prometheus(self) -> bytes:
         with self._lock:

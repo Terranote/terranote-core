@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     notifier_whatsapp_endpoint: str | None = None
     notifier_telegram_endpoint: str | None = None
     offline_gap_seconds: int = 5
+    metrics_username: str | None = None
+    metrics_password: str | None = None
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

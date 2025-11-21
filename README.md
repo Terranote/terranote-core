@@ -65,9 +65,68 @@ Consulta `docs/interfaces.md` para los contratos de entrada/salida de los adapta
 
 ## Observabilidad
 
-- El endpoint `GET /api/v1/status` expone métricas agregadas de publicación de notas (intentos, éxitos y fallos).
-- Las publicaciones en OSM registran logs informativos y de advertencia/errores con detalles de latitud y longitud para facilitar el diagnóstico.
-- El endpoint `GET /metrics` expone métricas en formato Prometheus con los contadores anteriores.
+### Health Check (`GET /api/v1/status`)
+
+Endpoint de salud mejorado que incluye:
+- **Estado general**: `ok`, `degraded`, o `down` basado en dependencias
+- **Información del sistema**: uptime, versión, ambiente
+- **Verificación de dependencias**: estado de la API de OSM
+- **Métricas de notas**: intentos, éxitos, errores HTTP, errores de red, respuestas inválidas, reintentos
+
+Ejemplo de respuesta:
+```json
+{
+  "status": "ok",
+  "uptime": 3600,
+  "version": "1.0.0",
+  "environment": "production",
+  "dependencies": {
+    "osm": {
+      "status": "ok",
+      "message": null
+    }
+  },
+  "metrics": {
+    "attempts": 150,
+    "successes": 145,
+    "http_errors": 3,
+    "network_errors": 2,
+    "invalid_responses": 0,
+    "retries": 5
+  }
+}
+```
+
+### Métricas Prometheus (`GET /metrics`)
+
+Endpoint que expone métricas en formato Prometheus:
+
+**Métricas de publicación de notas:**
+- `terranote_note_publication_attempts_total`: Total de intentos de publicación
+- `terranote_note_publication_successes_total`: Publicaciones exitosas
+- `terranote_note_publication_http_errors_total`: Errores HTTP
+- `terranote_note_publication_network_errors_total`: Errores de red
+- `terranote_note_publication_invalid_responses_total`: Respuestas inválidas
+- `terranote_note_publication_retries_total`: Reintentos
+
+**Métricas HTTP (capturadas automáticamente):**
+- `terranote_http_requests_total`: Total de peticiones HTTP (labels: method, route, status)
+- `terranote_http_request_duration_seconds`: Duración de peticiones HTTP (histograma)
+
+**Métricas de OSM API:**
+- `terranote_osm_api_calls_total`: Total de llamadas a OSM API (label: status)
+- `terranote_osm_api_call_duration_seconds`: Duración de llamadas a OSM API (histograma)
+
+**Autenticación básica opcional:**
+El endpoint `/metrics` puede protegerse con autenticación básica configurando:
+- `METRICS_USERNAME`: Usuario para autenticación (opcional)
+- `METRICS_PASSWORD`: Contraseña para autenticación (opcional)
+
+Si no se configuran, el endpoint es público.
+
+### Logging
+
+Las publicaciones en OSM registran logs informativos y de advertencia/errores con detalles de latitud y longitud para facilitar el diagnóstico.
 
 ### Ejecutar con Prometheus (Docker)
 
@@ -126,3 +185,5 @@ docker run -p 8000:8000 terranote-core:dev
 | `NOTIFIER_WHATSAPP_ENDPOINT`    | Callback del adaptador WhatsApp para notificaciones        | `null` (deshabilitado)                |
 | `NOTIFIER_TELEGRAM_ENDPOINT`    | Callback del adaptador Telegram para notificaciones        | `null` (deshabilitado)                |
 | `OFFLINE_GAP_SECONDS`           | Umbral para tratar mensajes como offline y usar `/batch`    | `5`                                   |
+| `METRICS_USERNAME`              | Usuario para autenticación básica en `/metrics` (opcional) | `null` (sin autenticación)            |
+| `METRICS_PASSWORD`              | Contraseña para autenticación básica en `/metrics` (opcional) | `null` (sin autenticación)            |

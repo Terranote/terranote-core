@@ -10,6 +10,15 @@ class NoteMetrics(BaseModel):
     retries: int
 
 
+class DependencyHealth(BaseModel):
+    status: str
+    message: str | None = None
+
+
 class HealthStatus(BaseModel):
     status: str
-    metrics: NoteMetrics
+    uptime: int
+    version: str
+    environment: str
+    dependencies: dict[str, DependencyHealth]
+    metrics: NoteMetrics | None = None

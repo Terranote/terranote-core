@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -36,13 +37,16 @@ class NotePublisher:
 
         while True:
             metrics.increment("note_publication_attempts")
+            start_time = time.time()
             try:
                 response = await self._osm_client.create_anonymous_note(
                     latitude=draft.latitude,
                     longitude=draft.longitude,
                     text=draft.text,
                 )
+                duration = time.time() - start_time
                 metrics.increment("note_publication_successes")
+                metrics.record_osm_api_call(status="success", duration=duration)
                 if attempt > 0:
                     self._logger.info(
                         "OSM note created after retry",
@@ -68,7 +72,14 @@ class NotePublisher:
                     created_at=response.created_at,
                 )
             except httpx.HTTPStatusError as exc:
+                duration = time.time() - start_time
                 metrics.increment("note_publication_http_errors")
+                status_label = "http_error"
+                if 400 <= exc.response.status_code < 500:
+                    status_label = "client_error"
+                elif 500 <= exc.response.status_code < 600:
+                    status_label = "server_error"
+                metrics.record_osm_api_call(status=status_label, duration=duration)
                 if attempt < max_retries and 500 <= exc.response.status_code < 600:
                     attempt += 1
                     metrics.increment("note_publication_retries")
@@ -96,7 +107,9 @@ class NotePublisher:
                     status_code=exc.response.status_code,
                 ) from exc
             except httpx.RequestError as exc:
+                duration = time.time() - start_time
                 metrics.increment("note_publication_network_errors")
+                metrics.record_osm_api_call(status="network_error", duration=duration)
                 if attempt < max_retries:
                     attempt += 1
                     metrics.increment("note_publication_retries")
@@ -118,7 +131,9 @@ class NotePublisher:
                 )
                 raise NotePublishingError(message="osm_api_unreachable") from exc
             except ValueError as exc:
+                duration = time.time() - start_time
                 metrics.increment("note_publication_invalid_responses")
+                metrics.record_osm_api_call(status="invalid_response", duration=duration)
                 self._logger.error(
                     "OSM API returned invalid response",
                     exc_info=exc,

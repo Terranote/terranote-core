@@ -4,6 +4,7 @@ from app.api.router import api_router
 from app.api.routes import metrics as metrics_router
 from app.config import settings
 from app.container import notification_service, osm_client
+from app.middleware.metrics import MetricsMiddleware
 
 
 async def shutdown_event() -> None:
@@ -17,6 +18,8 @@ def create_app() -> FastAPI:
         version=settings.api_version,
         description="Central orchestrator for Terranote note creation workflows.",
     )
+    # Add metrics middleware to capture HTTP request metrics
+    app.add_middleware(MetricsMiddleware)
     app.include_router(api_router, prefix="/api")
     app.include_router(metrics_router.router)
     app.add_event_handler("shutdown", shutdown_event)

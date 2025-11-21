@@ -70,9 +70,10 @@ class OSMClient:
     def _parse_note_response(self, payload: dict[str, Any]) -> OSMNoteResponse:
         properties = payload.get("properties") or {}
         note_id = str(properties.get("id"))
-        url = properties.get("url")
         created_raw = properties.get("date_created") or properties.get("dateCreated")
-        if not (note_id and url and created_raw):
+        if not (note_id and created_raw):
             raise ValueError("Invalid OSM API response: missing expected fields")
+        # Construct HTML URL instead of using JSON API URL
+        url = f"https://www.openstreetmap.org/note/{note_id}"
         created_at = _parse_osm_datetime(str(created_raw))
         return OSMNoteResponse(note_id=note_id, url=url, created_at=created_at)

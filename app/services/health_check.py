@@ -29,21 +29,28 @@ class HealthCheckService:
     async def check_osm(self) -> DependencyHealth:
         """Check OSM API availability."""
         try:
-            # Use a lightweight check: try to reach the API base URL
+            # Use a lightweight check: try to reach the API capabilities endpoint
+            # This endpoint is always available and doesn't require authentication
             async with httpx.AsyncClient(
                 base_url=settings.osm_api_base_url,
                 timeout=2.0,
             ) as client:
-                # Try to reach the API with a HEAD request to a known endpoint
-                # Using the API version endpoint which is lightweight
-                response = await client.head("/api/versions", follow_redirects=True)
-                if response.status_code < 500:
+                # Use the capabilities endpoint which is lightweight and always available
+                response = await client.get("/api/0.6/capabilities", follow_redirects=True)
+                if response.status_code == 200:
                     return DependencyHealth("ok")
-                return DependencyHealth(
-                    "degraded", f"OSM API returned status {response.status_code}"
-                )
+                elif response.status_code < 500:
+                    return DependencyHealth(
+                        "degraded", f"OSM API returned status {response.status_code}"
+                    )
+                else:
+                    return DependencyHealth(
+                        "degraded", f"OSM API server error: {response.status_code}"
+                    )
         except httpx.TimeoutException:
             return DependencyHealth("down", "OSM API timeout")
+        except httpx.ConnectError:
+            return DependencyHealth("down", "OSM API connection failed")
         except Exception as e:
             return DependencyHealth("down", f"OSM API unreachable: {str(e)}")
 

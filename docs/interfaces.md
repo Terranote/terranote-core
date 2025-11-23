@@ -1,5 +1,16 @@
 # Contratos de Interacción y Notificaciones
 
+> ⚠️ **TODO:** Ver [`docs/TODO-help-endpoint.md`](./TODO-help-endpoint.md) para implementar el endpoint de ayuda requerido por el adaptador de WhatsApp.
+
+## Endpoint de Ayuda (`GET /api/v1/channels/{channel}/help`)
+
+- **Resumen**: Proporciona información de ayuda dinámica para un canal específico.
+- **Estado**: ⚠️ **Pendiente de implementación** - Ver [`docs/TODO-help-endpoint.md`](./TODO-help-endpoint.md) y [`docs/help-endpoint-spec.md`](./help-endpoint-spec.md)
+- **Request**: `GET /api/v1/channels/{channel}/help?lang={lang}`
+- **Response**: JSON con `body` (texto) y `quick_replies` (botones opcionales)
+
+Ver la especificación completa en [`docs/help-endpoint-spec.md`](./help-endpoint-spec.md).
+
 ## Interacción entrante (`POST /api/v1/interactions`)
 
 - **Resumen**: Los adaptadores envían mensajes del usuario para agruparlos y crear notas.
